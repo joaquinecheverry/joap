@@ -794,7 +794,7 @@ const SANITY_QUERY = encodeURIComponent(
   video.playsInline = true;
   video.style.width = '100%';
   video.style.display = 'block';
-  imagesCol.appendChild(video);
+  div.appendChild(video);  // ✅ was imagesCol, should be div
 } else {
       const img = document.createElement('img');
       img.src = imageUrl(asset, 600);
