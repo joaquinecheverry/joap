@@ -769,53 +769,41 @@ const SANITY_QUERY = encodeURIComponent(
       });
 
       docs.forEach(function(project, globalIdx) {
-        sanityProjects[project._id] = project;
-        const col = project.column || '1';
-        const container = document.getElementById('col-images-' + col);
-        if (!container) return;
+  sanityProjects[project._id] = project;
+  const col = project.column || '1';
+  const container = document.getElementById('col-images-' + col);
+  if (!container) return;
 
-        const firstImage = project.images && project.images[0];
-       // const aspect = randomAspect(globalIdx);
+  const firstItem = project.images && project.images[0];
 
-        const div = document.createElement('div');
-div.className = 'img-placeholder';
-        div.dataset.projectId = project._id;
+  const div = document.createElement('div');
+  div.className = 'img-placeholder';
+  div.dataset.projectId = project._id;
 
-        if (firstImage) {
-          const img = document.createElement('img');
-          img.src = imageUrl(firstImage.asset, 600);
-          img.alt = project.title || '';
-          div.appendChild(img);
-        }
-const firstItem = project.images && project.images[0];
+  if (firstItem) {
+    const asset = firstItem.asset;
+    const isVideo = asset && asset.mimeType && asset.mimeType.startsWith('video/');
 
-const div = document.createElement('div');
-div.className = 'img-placeholder';
-div.dataset.projectId = project._id;
-
-if (firstItem) {
-  const asset = firstItem.asset;
-  const isVideo = asset && asset.mimeType && asset.mimeType.startsWith('video/');
-
-  if (isVideo) {
-    const video = document.createElement('video');
-    video.src = asset.url + '#t=0.1'; // seek to first frame for thumbnail
-    video.muted = true;
-    video.preload = 'metadata';
-    video.style.width = '100%';
-    video.style.display = 'block';
-    video.style.pointerEvents = 'none'; // clicks pass through to the div
-    div.appendChild(video);
-  } else {
-    const img = document.createElement('img');
-    img.src = imageUrl(asset, 600);
-    img.alt = project.title || '';
-    div.appendChild(img);
+    if (isVideo) {
+      const video = document.createElement('video');
+      video.src = asset.url + '#t=0.1';
+      video.muted = true;
+      video.preload = 'metadata';
+      video.style.width = '100%';
+      video.style.display = 'block';
+      video.style.pointerEvents = 'none';
+      div.appendChild(video);
+    } else {
+      const img = document.createElement('img');
+      img.src = imageUrl(asset, 600);
+      img.alt = project.title || '';
+      div.appendChild(img);
+    }
   }
-}
-        bindPlaceholderClick(div);
-        container.appendChild(div);
-      });
+
+  bindPlaceholderClick(div);
+  container.appendChild(div);
+});
 
     } catch (err) {
       console.error('Sanity fetch failed:', err);
