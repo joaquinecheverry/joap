@@ -359,15 +359,15 @@
 
   .proj-description { margin-bottom: 1em; }
 
-  .project-images-col {
-    grid-column: 2 / 4;
-    overflow-y: auto;
-    scrollbar-width: none;
-    padding-top: 60px;
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
+.project-images-col {
+  grid-column: 2 / 4;
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding-top: 60px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
   .project-images-col::-webkit-scrollbar { display: none; }
 
   .project-images-col img {
