@@ -794,7 +794,7 @@ const SANITY_QUERY = encodeURIComponent(
   video.playsInline = true;
   video.style.width = '100%';
   video.style.display = 'block';
-  div.appendChild(video);  // ✅ was imagesCol, should be div
+div.appendChild(video);
 } else {
       const img = document.createElement('img');
       img.src = imageUrl(asset, 600);
@@ -831,16 +831,16 @@ const SANITY_QUERY = encodeURIComponent(
   const isVideo = asset.mimeType && asset.mimeType.startsWith('video/');
 
   if (isVideo) {
-    const video = document.createElement('video');
-    video.src = asset.url;
-    video.controls = true;
-    video.autoplay = false;
-    video.loop = true;
-    video.muted = false;
-    video.style.width = '100%';
-    video.style.display = 'block';
-    imagesCol.appendChild(video);
-  } else {
+  const video = document.createElement('video');
+  video.src = asset.url;
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.style.width = '100%';
+  video.style.display = 'block';
+  imagesCol.appendChild(video);
+} else {
     const url = imageUrl(asset, 800);
     if (!url) return;
     const img = document.createElement('img');
