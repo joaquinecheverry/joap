@@ -42,16 +42,59 @@ export const project = defineType({
       type: 'array',
       of: [
         {
-          type: 'image',
+          type: 'object',
           name: 'image',
           title: 'Image',
-          options: { hotspot: true }
+          fields: [
+            {
+              name: 'asset',
+              title: 'Image',
+              type: 'image',
+              options: { hotspot: true }
+            },
+            {
+              name: 'layout',
+              title: 'Layout',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Full width', value: 'full' },
+                  { title: 'Half width (pair side by side)', value: 'half' },
+                ],
+                layout: 'radio'
+              },
+              initialValue: 'full'
+            }
+          ],
+          preview: {
+            select: { media: 'asset', title: 'layout' }
+          }
         },
         {
-          type: 'file',
+          type: 'object',
           name: 'video',
           title: 'Video',
-          options: { accept: 'video/*' }
+          fields: [
+            {
+              name: 'asset',
+              title: 'Video',
+              type: 'file',
+              options: { accept: 'video/*' }
+            },
+            {
+              name: 'layout',
+              title: 'Layout',
+              type: 'string',
+              options: {
+                list: [
+                  { title: 'Full width', value: 'full' },
+                  { title: 'Half width (pair side by side)', value: 'half' },
+                ],
+                layout: 'radio'
+              },
+              initialValue: 'full'
+            }
+          ]
         }
       ]
     }),
