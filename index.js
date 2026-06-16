@@ -37,67 +37,24 @@ export const project = defineType({
       validation: Rule => Rule.required()
     }),
     defineField({
-      name: 'images',
-      title: 'Images / Videos',
-      type: 'array',
-      of: [
-        {
-          type: 'object',
-          name: 'image',
-          title: 'Image',
-          fields: [
-            {
-              name: 'asset',
-              title: 'Image',
-              type: 'image',
-              options: { hotspot: true }
-            },
-            {
-              name: 'layout',
-              title: 'Layout',
-              type: 'string',
-              options: {
-                list: [
-                  { title: 'Full width', value: 'full' },
-                  { title: 'Half width (pair side by side)', value: 'half' },
-                ],
-                layout: 'radio'
-              },
-              initialValue: 'full'
-            }
-          ],
-          preview: {
-            select: { media: 'asset', title: 'layout' }
-          }
-        },
-        {
-          type: 'object',
-          name: 'video',
-          title: 'Video',
-          fields: [
-            {
-              name: 'asset',
-              title: 'Video',
-              type: 'file',
-              options: { accept: 'video/*' }
-            },
-            {
-              name: 'layout',
-              title: 'Layout',
-              type: 'string',
-              options: {
-                list: [
-                  { title: 'Full width', value: 'full' },
-                  { title: 'Half width (pair side by side)', value: 'half' },
-                ],
-                layout: 'radio'
-              },
-              initialValue: 'full'
-            }
-          ]
-        }
-      ]
-    }),
+  name: 'images',
+  title: 'Images / Videos',
+  type: 'array',
+  of: [
+    {
+      type: 'image',
+      name: 'image',
+      title: 'Image',
+      options: { hotspot: true }
+    },
+    {
+      type: 'file',
+      name: 'video',
+      title: 'Video',
+      options: { accept: 'video/*' }
+    }
+  ]
+}),
     defineField({
       name: 'order',
       title: 'Order (lower = higher up)',
@@ -108,3 +65,4 @@ export const project = defineType({
 })
 
 export default [project]
+
