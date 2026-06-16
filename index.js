@@ -18,6 +18,11 @@ export const project = defineType({
       rows: 4
     }),
     defineField({
+      name: 'role',
+      title: 'Role',
+      type: 'string',
+    }),
+    defineField({
       name: 'column',
       title: 'Column',
       type: 'string',
@@ -33,9 +38,28 @@ export const project = defineType({
     }),
     defineField({
       name: 'images',
-      title: 'Images',
+      title: 'Images / Videos',
       type: 'array',
-      of: [{ type: 'image', options: { hotspot: true } }]
+      of: [
+        {
+          type: 'image',
+          options: { hotspot: true }
+        },
+        {
+          type: 'file',
+          title: 'Video',
+          options: { accept: 'video/*' },
+          fields: [
+            defineField({
+              name: 'mediaType',
+              title: 'Media Type',
+              type: 'string',
+              initialValue: 'video',
+              hidden: true,
+            })
+          ]
+        }
+      ]
     }),
     defineField({
       name: 'order',
