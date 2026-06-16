@@ -633,547 +633,546 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script>
- const colHeadersEl    = document.getElementById('col-headers');
-const scrollAreaEl    = document.getElementById('scroll-area');
-const checkboxes      = document.querySelectorAll('.col-checkbox');
-const headers         = document.querySelectorAll('.col-header');
-const aboutBtn        = document.getElementById('about-btn');
-const aboutOverlay    = document.getElementById('about-overlay');
-const secondEmail     = document.getElementById('second-email');
-const projectOverlay  = document.getElementById('project-overlay');
-const projBackArrow   = document.getElementById('proj-back-arrow');
+  const colHeadersEl    = document.getElementById('col-headers');
+  const scrollAreaEl    = document.getElementById('scroll-area');
+  const checkboxes      = document.querySelectorAll('.col-checkbox');
+  const headers         = document.querySelectorAll('.col-header');
+  const aboutBtn        = document.getElementById('about-btn');
+  const aboutOverlay    = document.getElementById('about-overlay');
+  const secondEmail     = document.getElementById('second-email');
+  const projectOverlay  = document.getElementById('project-overlay');
+  const projBackArrow   = document.getElementById('proj-back-arrow');
 
-let activeCol = null;
-let aboutOpen = false;
-let animating = false;
+  let activeCol = null;
+  let aboutOpen = false;
+  let animating = false;
 
-const g = { a: 1, b: 1, c: 1 };
+  const g = { a: 1, b: 1, c: 1 };
 
-function applyGrid() {
-  const val = `${g.a}fr ${g.b}fr ${g.c}fr`;
-  colHeadersEl.style.gridTemplateColumns = val;
-  scrollAreaEl.style.gridTemplateColumns = val;
-}
+  function applyGrid() {
+    const val = `${g.a}fr ${g.b}fr ${g.c}fr`;
+    colHeadersEl.style.gridTemplateColumns = val;
+    scrollAreaEl.style.gridTemplateColumns = val;
+  }
 
-function fadeOutInactiveBoxes(keepIdx) {
-  checkboxes.forEach((cb, i) => {
-    if (i !== keepIdx) gsap.to(cb, { opacity: 0, duration: 0.12, ease: 'power2.in' });
+  function fadeOutInactiveBoxes(keepIdx) {
+    checkboxes.forEach((cb, i) => {
+      if (i !== keepIdx) gsap.to(cb, { opacity: 0, duration: 0.12, ease: 'power2.in' });
+    });
+  }
+
+  function fadeInAllBoxes() {
+    checkboxes.forEach(cb => gsap.to(cb, { opacity: 1, duration: 0.2, ease: 'power2.out' }));
+  }
+
+  function expandCol(idx) {
+    animating = true;
+    fadeOutInactiveBoxes(idx);
+    const keys = ['a', 'b', 'c'];
+    const others = [0, 1, 2].filter(i => i !== idx);
+    gsap.to(g, {
+      [keys[others[0]]]: 0.28, [keys[others[1]]]: 0.28, [keys[idx]]: 5,
+      duration: 1.2, ease: 'power3.out', onUpdate: applyGrid,
+      onComplete: () => { animating = false; }
+    });
+  }
+
+  function collapseAll(cb) {
+    animating = true;
+    gsap.to(g, {
+      a: 0.65, b: 0.65, c: 0.65,
+      duration: 0.2, ease: 'power2.out', onUpdate: applyGrid,
+      onComplete: () => {
+        gsap.to(g, {
+          a: 1, b: 1, c: 1,
+          duration: 0.75, ease: 'power3.out', onUpdate: applyGrid,
+          onComplete: () => { animating = false; fadeInAllBoxes(); if (cb) cb(); }
+        });
+      }
+    });
+  }
+
+  checkboxes.forEach((box, i) => {
+    box.addEventListener('click', () => {
+      if (animating) return;
+      const colNum = i + 1;
+      if (activeCol === colNum) {
+        activeCol = null;
+        headers[i].classList.remove('active');
+        collapseAll();
+      } else {
+        if (activeCol !== null) headers[activeCol - 1].classList.remove('active');
+        activeCol = colNum;
+        headers[i].classList.add('active');
+        expandCol(i);
+      }
+    });
   });
-}
 
-function fadeInAllBoxes() {
-  checkboxes.forEach(cb => gsap.to(cb, { opacity: 1, duration: 0.2, ease: 'power2.out' }));
-}
-
-function expandCol(idx) {
-  animating = true;
-  fadeOutInactiveBoxes(idx);
-  const keys = ['a', 'b', 'c'];
-  const others = [0, 1, 2].filter(i => i !== idx);
-  gsap.to(g, {
-    [keys[others[0]]]: 0.28, [keys[others[1]]]: 0.28, [keys[idx]]: 5,
-    duration: 1.2, ease: 'power3.out', onUpdate: applyGrid,
-    onComplete: () => { animating = false; }
-  });
-}
-
-function collapseAll(cb) {
-  animating = true;
-  gsap.to(g, {
-    a: 0.65, b: 0.65, c: 0.65,
-    duration: 0.2, ease: 'power2.out', onUpdate: applyGrid,
-    onComplete: () => {
-      gsap.to(g, {
-        a: 1, b: 1, c: 1,
-        duration: 0.75, ease: 'power3.out', onUpdate: applyGrid,
-        onComplete: () => { animating = false; fadeInAllBoxes(); if (cb) cb(); }
-      });
-    }
-  });
-}
-
-checkboxes.forEach((box, i) => {
-  box.addEventListener('click', () => {
-    if (animating) return;
-    const colNum = i + 1;
-    if (activeCol === colNum) {
-      activeCol = null;
-      headers[i].classList.remove('active');
-      collapseAll();
-    } else {
-      if (activeCol !== null) headers[activeCol - 1].classList.remove('active');
-      activeCol = colNum;
-      headers[i].classList.add('active');
-      expandCol(i);
-    }
-  });
-});
-
-document.getElementById('home-btn').addEventListener('click', () => {
-  projectOverlay.classList.remove('visible');
-  colHeadersEl.classList.remove('hidden');
-  aboutOpen = false;
-  aboutOverlay.style.opacity = 0;
-  aboutOverlay.classList.remove('visible');
-  secondEmail.classList.remove('visible');
-});
-
-aboutBtn.addEventListener('click', e => {
-  e.preventDefault();
-  aboutOpen = !aboutOpen;
-  if (aboutOpen) {
-    aboutOverlay.style.opacity = 1;
-    aboutOverlay.classList.add('visible');
-    secondEmail.classList.add('visible');
-  } else {
+  document.getElementById('home-btn').addEventListener('click', () => {
+    projectOverlay.classList.remove('visible');
+    colHeadersEl.classList.remove('hidden');
+    aboutOpen = false;
     aboutOverlay.style.opacity = 0;
     aboutOverlay.classList.remove('visible');
     secondEmail.classList.remove('visible');
+  });
+
+  aboutBtn.addEventListener('click', e => {
+    e.preventDefault();
+    aboutOpen = !aboutOpen;
+    if (aboutOpen) {
+      aboutOverlay.style.opacity = 1;
+      aboutOverlay.classList.add('visible');
+      secondEmail.classList.add('visible');
+    } else {
+      aboutOverlay.style.opacity = 0;
+      aboutOverlay.classList.remove('visible');
+      secondEmail.classList.remove('visible');
+    }
+  });
+
+  // ── Sanity ─────────────────────────────────────────────────────
+  const SANITY_PROJECT_ID = '12zoe036';
+  const SANITY_DATASET    = 'production';
+const SANITY_QUERY = encodeURIComponent(
+  '*[_type == "project"] | order(order asc) { _id, title, description, role, column, images[] { _type, asset-> { url, mimeType } } }'
+);  const SANITY_URL        = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_QUERY}`;
+
+  const ASPECT_CLASSES = ['tall', 'short', 'sq', 'wide', ''];
+  let sanityProjects = {};
+
+  function imageUrl(asset, w) {
+    w = w || 600;
+    if (!asset || !asset.url) return '';
+    return asset.url + '?w=' + w + '&auto=format';
   }
+
+  function randomAspect(i) {
+    return ASPECT_CLASSES[i % ASPECT_CLASSES.length];
+  }
+
+  function bindPlaceholderClick(el) {
+    el.addEventListener('click', function() {
+      if (el.dataset.projectId) openProject(el.dataset.projectId);
+    });
+  }
+
+  async function loadProjects() {
+    try {
+      const res  = await fetch(SANITY_URL);
+      const json = await res.json();
+      const docs = json.result || [];
+
+      ['1','2','3'].forEach(function(c) {
+        document.getElementById('col-images-' + c).innerHTML = '';
+      });
+
+      docs.forEach(function(project, globalIdx) {
+  sanityProjects[project._id] = project;
+  const col = project.column || '1';
+  const container = document.getElementById('col-images-' + col);
+  if (!container) return;
+
+  const firstItem = project.images && project.images[0];
+
+  const div = document.createElement('div');
+  div.className = 'img-placeholder';
+  div.dataset.projectId = project._id;
+
+  if (firstItem) {
+    const asset = firstItem.asset;
+    const isVideo = asset && asset.mimeType && asset.mimeType.startsWith('video/');
+
+    if (isVideo) {
+  const video = document.createElement('video');
+  video.src = asset.url;
+  video.controls = false;
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.style.width = '100%';
+  video.style.display = 'block';
+div.appendChild(video);
+} else {
+      const img = document.createElement('img');
+      img.src = imageUrl(asset, 600);
+      img.alt = project.title || '';
+      div.appendChild(img);
+    }
+  }
+
+  bindPlaceholderClick(div);
+  container.appendChild(div);
 });
 
-// ── Sanity ─────────────────────────────────────────────────────
-const SANITY_PROJECT_ID = '12zoe036';
-const SANITY_DATASET    = 'production';
-const SANITY_QUERY = encodeURIComponent(
-  '*[_type == "project"] | order(order asc) { _id, title, description, role, column, images[] { _type, layout, "asset": asset.asset-> { url, mimeType } } }'
-);
-const SANITY_URL = `https://${SANITY_PROJECT_ID}.api.sanity.io/v2021-10-21/data/query/${SANITY_DATASET}?query=${SANITY_QUERY}`;
-
-let sanityProjects = {};
-
-function imageUrl(asset, w) {
-  w = w || 600;
-  if (!asset || !asset.url) return '';
-  return asset.url + '?w=' + w + '&auto=format';
-}
-
-function bindPlaceholderClick(el) {
-  el.addEventListener('click', function() {
-    if (el.dataset.projectId) openProject(el.dataset.projectId);
-  });
-}
-
-async function loadProjects() {
-  try {
-    const res  = await fetch(SANITY_URL);
-    const json = await res.json();
-    const docs = json.result || [];
-
-    ['1','2','3'].forEach(function(c) {
-      document.getElementById('col-images-' + c).innerHTML = '';
-    });
-
-    docs.forEach(function(project) {
-      sanityProjects[project._id] = project;
-      const col = project.column || '1';
-      const container = document.getElementById('col-images-' + col);
-      if (!container) return;
-
-      const firstItem = project.images && project.images[0];
-
-      const div = document.createElement('div');
-      div.className = 'img-placeholder';
-      div.dataset.projectId = project._id;
-
-      if (firstItem) {
-        appendMedia(firstItem, div, 600);
-      }
-
-      bindPlaceholderClick(div);
-      container.appendChild(div);
-    });
-
-  } catch (err) {
-    console.error('Sanity fetch failed:', err);
+    } catch (err) {
+      console.error('Sanity fetch failed:', err);
+    }
   }
-}
 
-loadProjects();
+  loadProjects();
 
-function appendMedia(item, container, width) {
-  width = width || 800;
+  function openProject(projectId) {
+    const data = sanityProjects[projectId];
+    if (!data) return;
+    document.getElementById('proj-title').textContent       = data.title || '';
+    document.getElementById('proj-description').textContent = data.description || '';
+    document.getElementById('proj-role').textContent        = data.role || '';
 
-  // Support both old shape (item.asset.url) and new object shape (item.asset.asset.url)
-  // After schema change, images are objects with item.asset being the file/image field,
-  // and the actual url lives at item.asset->url which GROQ resolves to item.asset.url
-  const asset = item.asset;
+    const imagesCol = document.getElementById('project-images-col');
+    imagesCol.innerHTML = '';
+
+    (data.images || []).forEach(function(imgObj) {
+  const asset = imgObj.asset;
   if (!asset || !asset.url) return;
 
   const isVideo = asset.mimeType && asset.mimeType.startsWith('video/');
 
   if (isVideo) {
-    const video = document.createElement('video');
-    video.src = asset.url;
-    video.autoplay = true;
-    video.loop = true;
-    video.muted = true;
-    video.playsInline = true;
-    video.style.cssText = 'width:100%; display:block;';
-    container.appendChild(video);
-  } else {
+  const video = document.createElement('video');
+  video.src = asset.url;
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.style.width = '100%';
+  video.style.display = 'block';
+  imagesCol.appendChild(video);
+} else {
+    const url = imageUrl(asset, 800);
+    if (!url) return;
     const img = document.createElement('img');
-    img.src = imageUrl(asset, width);
-    img.style.cssText = 'width:100%; display:block;';
-    container.appendChild(img);
+    img.src = url;
+    imagesCol.appendChild(img);
   }
-}
+});
 
-function openProject(projectId) {
-  const data = sanityProjects[projectId];
-  if (!data) return;
-  document.getElementById('proj-title').textContent       = data.title || '';
-  document.getElementById('proj-description').textContent = data.description || '';
-  document.getElementById('proj-role').textContent        = data.role || '';
+    colHeadersEl.classList.add('hidden');
+    projectOverlay.classList.add('visible');
+  }
 
-  const imagesCol = document.getElementById('project-images-col');
-  imagesCol.innerHTML = '';
+  function closeProject() {
+    projectOverlay.classList.remove('visible');
+    colHeadersEl.classList.remove('hidden');
+  }
 
-  const items = data.images || [];
-  let i = 0;
+  projBackArrow.addEventListener('click', closeProject);
 
-  while (i < items.length) {
-    const item = items[i];
-    const asset = item.asset;
-    if (!asset || !asset.url) { i++; continue; }
+  document.querySelectorAll('.img-placeholder').forEach(el => {
+    el.addEventListener('click', () => {
+      if (el.dataset.project) openProject(el.dataset.project);
+    });
+  });
 
-    const isHalf = item.layout === 'half';
-    const nextItem = items[i + 1];
-    const nextIsHalf = nextItem && nextItem.layout === 'half'
-                    && nextItem.asset && nextItem.asset.url;
+  // ── Flickr carousel ────────────────────────────────────────────
+  const FLICKR_API_KEY = "9a39e096d96d657fcd59345af98faabb";
+  const INTERVAL_MS    = 700;
+  const carousel        = document.getElementById('flickr-carousel');
+  const carouselLoading = document.getElementById('carousel-loading');
+  const wordInput       = document.getElementById('word-input');
 
-    if (isHalf && nextIsHalf) {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex; gap:0; width:100%;';
+  let carouselUrls = [], carouselQueue = [], carouselImgs = [null, null];
+  let activeSlot = 0, carouselTimer = null;
 
-      [items[i], items[i + 1]].forEach(function(it) {
-        const wrap = document.createElement('div');
-        wrap.style.cssText = 'width:50%; flex-shrink:0;';
-        appendMedia(it, wrap, 800);
-        row.appendChild(wrap);
+  function fetchFlickrPage(tag, page) {
+    return new Promise((resolve, reject) => {
+      const cbName = '_fCb_' + Date.now() + '_' + page;
+      const script = document.createElement('script');
+      window[cbName] = (data) => {
+        delete window[cbName]; document.head.removeChild(script);
+        if (data.stat !== 'ok') return reject(new Error(data.message));
+        resolve(data.photos.photo || []);
+      };
+      script.onerror = () => reject(new Error('JSONP failed'));
+      const params = new URLSearchParams({
+        method: 'flickr.photos.search', api_key: FLICKR_API_KEY,
+        tags: tag, tag_mode: 'any', sort: 'interestingness-desc',
+        content_type: '1', media: 'photos', extras: 'url_m,url_q',
+        per_page: '100', page: String(page), safe_search: '1',
+        format: 'json', jsoncallback: cbName,
       });
+      script.src = `https://api.flickr.com/services/rest/?${params}`;
+      document.head.appendChild(script);
+    });
+  }
 
-      imagesCol.appendChild(row);
-      i += 2;
-    } else {
-      appendMedia(item, imagesCol, 800);
-      i++;
+  function photoToUrl(p) {
+    return p.url_m || p.url_q || `https://live.staticflickr.com/${p.server}/${p.id}_${p.secret}_m.jpg`;
+  }
+
+  function loadImg(src) {
+    return new Promise(resolve => {
+      const img = new Image(); img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img); img.onerror = () => resolve(null); img.src = src;
+    });
+  }
+
+  function dequeueUrl() {
+    if (!carouselQueue.length) carouselQueue = [...carouselUrls].sort(() => Math.random() - 0.5);
+    return carouselQueue.shift();
+  }
+
+  function setupCarouselDom() {
+    carousel.innerHTML = '';
+    for (let i = 0; i < 2; i++) {
+      const img = document.createElement('img');
+      img.style.zIndex = i === 0 ? 2 : 1;
+      carousel.appendChild(img); carouselImgs[i] = img;
     }
   }
 
-  colHeadersEl.classList.add('hidden');
-  projectOverlay.classList.add('visible');
-}
-
-function closeProject() {
-  projectOverlay.classList.remove('visible');
-  colHeadersEl.classList.remove('hidden');
-}
-
-projBackArrow.addEventListener('click', closeProject);
-
-// ── Flickr carousel ────────────────────────────────────────────
-const FLICKR_API_KEY  = "9a39e096d96d657fcd59345af98faabb";
-const INTERVAL_MS     = 700;
-const carousel        = document.getElementById('flickr-carousel');
-const carouselLoading = document.getElementById('carousel-loading');
-const wordInput       = document.getElementById('word-input');
-
-let carouselUrls = [], carouselQueue = [], carouselImgs = [null, null];
-let activeSlot = 0, carouselTimer = null;
-
-function fetchFlickrPage(tag, page) {
-  return new Promise((resolve, reject) => {
-    const cbName = '_fCb_' + Date.now() + '_' + page;
-    const script = document.createElement('script');
-    window[cbName] = (data) => {
-      delete window[cbName]; document.head.removeChild(script);
-      if (data.stat !== 'ok') return reject(new Error(data.message));
-      resolve(data.photos.photo || []);
-    };
-    script.onerror = () => reject(new Error('JSONP failed'));
-    const params = new URLSearchParams({
-      method: 'flickr.photos.search', api_key: FLICKR_API_KEY,
-      tags: tag, tag_mode: 'any', sort: 'interestingness-desc',
-      content_type: '1', media: 'photos', extras: 'url_m,url_q',
-      per_page: '100', page: String(page), safe_search: '1',
-      format: 'json', jsoncallback: cbName,
-    });
-    script.src = `https://api.flickr.com/services/rest/?${params}`;
-    document.head.appendChild(script);
-  });
-}
-
-function photoToUrl(p) {
-  return p.url_m || p.url_q || `https://live.staticflickr.com/${p.server}/${p.id}_${p.secret}_m.jpg`;
-}
-
-function loadImg(src) {
-  return new Promise(resolve => {
-    const img = new Image(); img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img); img.onerror = () => resolve(null); img.src = src;
-  });
-}
-
-function dequeueUrl() {
-  if (!carouselQueue.length) carouselQueue = [...carouselUrls].sort(() => Math.random() - 0.5);
-  return carouselQueue.shift();
-}
-
-function setupCarouselDom() {
-  carousel.innerHTML = '';
-  for (let i = 0; i < 2; i++) {
-    const img = document.createElement('img');
-    img.style.zIndex = i === 0 ? 2 : 1;
-    carousel.appendChild(img); carouselImgs[i] = img;
+  async function showNext() {
+    const url = dequeueUrl(); const img = await loadImg(url); if (!img) return;
+    const inc = activeSlot, out = 1 - activeSlot;
+    carouselImgs[inc].src = img.src; carouselImgs[inc].style.zIndex = 2; carouselImgs[inc].classList.add('active');
+    carouselImgs[out].style.zIndex = 1; carouselImgs[out].classList.remove('active');
+    activeSlot = out;
   }
-}
 
-async function showNext() {
-  const url = dequeueUrl(); const img = await loadImg(url); if (!img) return;
-  const inc = activeSlot, out = 1 - activeSlot;
-  carouselImgs[inc].src = img.src; carouselImgs[inc].style.zIndex = 2; carouselImgs[inc].classList.add('active');
-  carouselImgs[out].style.zIndex = 1; carouselImgs[out].classList.remove('active');
-  activeSlot = out;
-}
+  function stopCarousel() { clearInterval(carouselTimer); carouselTimer = null; }
 
-function stopCarousel() { clearInterval(carouselTimer); carouselTimer = null; }
-
-async function startCarouselForWord(word) {
-  stopCarousel(); carousel.classList.add('visible'); carouselLoading.style.display = 'flex';
-  carouselUrls = []; carouselQueue = []; activeSlot = 0; setupCarouselDom();
-  try {
-    const photos = await fetchFlickrPage(word.trim(), 1);
-    const urls = photos.map(photoToUrl).filter(Boolean);
-    if (!urls.length) { carouselLoading.textContent = 'no results'; return; }
-    carouselUrls = urls; carouselLoading.style.display = 'none';
-    await showNext();
-    carouselTimer = setInterval(showNext, INTERVAL_MS);
-  } catch (err) { carouselLoading.textContent = 'error loading'; console.error(err); }
-}
-
-wordInput.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter') return;
-  const val = wordInput.value.trim();
-  if (!val) { stopCarousel(); carousel.classList.remove('visible'); return; }
-  startCarouselForWord(val);
-});
-
-// ── Shared mic / audio context ─────────────────────────────────
-let micStream = null, audioCtx = null, analyser = null, micSource = null;
-let micReady = false;
-
-async function startMic() {
-  if (micReady && analyser) return true;
-  try {
-    micStream  = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-    audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-    analyser   = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    micSource  = audioCtx.createMediaStreamSource(micStream);
-    micSource.connect(analyser);
-    micReady = true;
-    return true;
-  } catch (e) {
-    return false;
+  async function startCarouselForWord(word) {
+    stopCarousel(); carousel.classList.add('visible'); carouselLoading.style.display = 'flex';
+    carouselUrls = []; carouselQueue = []; activeSlot = 0; setupCarouselDom();
+    try {
+      const photos = await fetchFlickrPage(word.trim(), 1);
+      const urls = photos.map(photoToUrl).filter(Boolean);
+      if (!urls.length) { carouselLoading.textContent = 'no results'; return; }
+      carouselUrls = urls; carouselLoading.style.display = 'none';
+      await showNext();
+      carouselTimer = setInterval(showNext, INTERVAL_MS);
+    } catch (err) { carouselLoading.textContent = 'error loading'; console.error(err); }
   }
-}
 
-// ── Clap / dark mode ───────────────────────────────────────────
-const clapBtn   = document.getElementById('clap-btn');
-const clapModal = document.getElementById('clap-modal');
-const dot1      = document.getElementById('dot-1');
-const dot2      = document.getElementById('dot-2');
+  wordInput.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const val = wordInput.value.trim();
+    if (!val) { stopCarousel(); carousel.classList.remove('visible'); return; }
+    startCarouselForWord(val);
+  });
 
-let clapModalOpen  = false;
-let clapCount      = 0;
-let lastClapTime   = 0;
-let clapListening  = false;
-let clapRaf        = null;
-const CLAP_THRESHOLD = 0.18;
-const CLAP_COOLDOWN  = 250;
-const CLAP_WINDOW    = 2000;
+  // ── Shared mic / audio context ─────────────────────────────────
+  let micStream = null, audioCtx = null, analyser = null, micSource = null;
+  let micReady = false;
 
-function flashDot(n) {
-  const dot = n === 1 ? dot1 : dot2;
-  dot.classList.add('lit');
-  setTimeout(() => dot.classList.remove('lit'), 300);
-}
+  async function startMic() {
+    // Already running — reuse
+    if (micReady && analyser) return true;
+    try {
+      micStream  = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+      audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
+      analyser   = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      micSource  = audioCtx.createMediaStreamSource(micStream);
+      micSource.connect(analyser);
+      micReady = true;
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
 
-function resetDots() { dot1.classList.remove('lit'); dot2.classList.remove('lit'); }
+  // ── Clap / dark mode ───────────────────────────────────────────
+  const clapBtn   = document.getElementById('clap-btn');
+  const clapModal = document.getElementById('clap-modal');
+  const dot1      = document.getElementById('dot-1');
+  const dot2      = document.getElementById('dot-2');
 
-function toggleDark() { document.body.classList.toggle('dark'); }
+  let clapModalOpen  = false;
+  let clapCount      = 0;
+  let lastClapTime   = 0;
+  let clapListening  = false;
+  let clapRaf        = null;
+  const CLAP_THRESHOLD = 0.18;
+  const CLAP_COOLDOWN  = 250;
+  const CLAP_WINDOW    = 2000;
 
-function clapTick() {
-  if (!clapListening || !analyser) { clapRaf = null; return; }
-  const buf = new Float32Array(analyser.fftSize);
-  analyser.getFloatTimeDomainData(buf);
-  let sum = 0;
-  for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-  const rms = Math.sqrt(sum / buf.length);
-  const now = Date.now();
+  function flashDot(n) {
+    const dot = n === 1 ? dot1 : dot2;
+    dot.classList.add('lit');
+    setTimeout(() => dot.classList.remove('lit'), 300);
+  }
 
-  if (rms > CLAP_THRESHOLD && (now - lastClapTime > CLAP_COOLDOWN)) {
-    lastClapTime = now;
-    clapCount++;
-    flashDot(clapCount);
-    if (clapCount === 1) {
-      setTimeout(() => { if (clapCount === 1) { clapCount = 0; resetDots(); } }, CLAP_WINDOW);
-    } else if (clapCount >= 2) {
-      clapCount = 0;
-      resetDots();
-      toggleDark();
+  function resetDots() { dot1.classList.remove('lit'); dot2.classList.remove('lit'); }
+
+  function toggleDark() { document.body.classList.toggle('dark'); }
+
+  function clapTick() {
+    if (!clapListening || !analyser) { clapRaf = null; return; }
+    const buf = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+    const rms = Math.sqrt(sum / buf.length);
+    const now = Date.now();
+
+    if (rms > CLAP_THRESHOLD && (now - lastClapTime > CLAP_COOLDOWN)) {
+      lastClapTime = now;
+      clapCount++;
+      flashDot(clapCount);
+      if (clapCount === 1) {
+        setTimeout(() => { if (clapCount === 1) { clapCount = 0; resetDots(); } }, CLAP_WINDOW);
+      } else if (clapCount >= 2) {
+        clapCount = 0;
+        resetDots();
+        toggleDark();
+        clapModal.classList.remove('visible');
+        clapModalOpen = false;
+        clapListening = false;
+        clapRaf = null;
+        return;
+      }
+    }
+    clapRaf = requestAnimationFrame(clapTick);
+  }
+
+  clapBtn.addEventListener('click', async () => {
+    if (clapModalOpen) {
       clapModal.classList.remove('visible');
       clapModalOpen = false;
       clapListening = false;
-      clapRaf = null;
-      return;
+    } else {
+      clapModal.querySelector('#clap-modal-inner').childNodes[0].textContent = 'clap twice to turn the lights off\n';
+      clapModal.classList.add('visible');
+      clapModalOpen = true;
+      clapCount = 0;
+      resetDots();
+      const ok = await startMic();
+      if (!ok) {
+        clapModal.querySelector('#clap-modal-inner').childNodes[0].textContent = 'mic access denied :(';
+        return;
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+      clapListening = true;
+      cancelAnimationFrame(clapRaf);
+      clapRaf = requestAnimationFrame(clapTick);
     }
-  }
-  clapRaf = requestAnimationFrame(clapTick);
-}
+  });
 
-clapBtn.addEventListener('click', async () => {
-  if (clapModalOpen) {
-    clapModal.classList.remove('visible');
-    clapModalOpen = false;
-    clapListening = false;
-  } else {
-    clapModal.querySelector('#clap-modal-inner').childNodes[0].textContent = 'clap twice to turn the lights off\n';
-    clapModal.classList.add('visible');
-    clapModalOpen = true;
-    clapCount = 0;
-    resetDots();
-    const ok = await startMic();
-    if (!ok) {
-      clapModal.querySelector('#clap-modal-inner').childNodes[0].textContent = 'mic access denied :(';
-      return;
-    }
-    if (audioCtx && audioCtx.state === 'suspended') {
-      await audioCtx.resume();
-    }
-    clapListening = true;
-    cancelAnimationFrame(clapRaf);
-    clapRaf = requestAnimationFrame(clapTick);
-  }
-});
+  // ── Sing / rainbow mode ────────────────────────────────────────
+  const singBtn      = document.getElementById('sing-btn');
+  const singModal    = document.getElementById('sing-modal');
+  const singBarFill  = document.getElementById('sing-bar-fill');
 
-// ── Sing / rainbow mode ────────────────────────────────────────
-const singBtn      = document.getElementById('sing-btn');
-const singModal    = document.getElementById('sing-modal');
-const singBarFill  = document.getElementById('sing-bar-fill');
+  const SING_THRESHOLD   = 0.04;   // raised — your RMS was 0.09–0.15 when singing
+  const SING_DURATION    = 5000;   // 5s feels more rewarding than 7s
+  const RAINBOW_DURATION = 4000;
+  const SING_DECAY       = 0.08;   // % lost per frame when silent (was 1.5 — way too fast at 60fps)
 
-const SING_THRESHOLD   = 0.04;
-const SING_DURATION    = 5000;
-const RAINBOW_DURATION = 4000;
-const SING_DECAY       = 0.08;
+  let singModalOpen  = false;
+  let singStart      = null;
+  let singRaf        = null;
+  let rainbowTimer   = null;
 
-let singModalOpen  = false;
-let singStart      = null;
-let singRaf        = null;
-let rainbowTimer   = null;
-
-function triggerRainbow() {
-  singModal.classList.remove('visible');
-  singModalOpen = false;
-  singBarFill.style.width = '0%';
-  singStart = null;
-  singRaf = null;
-
-  document.body.classList.add('rainbow');
-  clearTimeout(rainbowTimer);
-  rainbowTimer = setTimeout(() => document.body.classList.remove('rainbow'), RAINBOW_DURATION);
-}
-
-function singTick() {
-  if (!analyser) { singRaf = null; return; }
-
-  const buf = new Float32Array(analyser.fftSize);
-  analyser.getFloatTimeDomainData(buf);
-  let sum = 0;
-  for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
-  const rms = Math.sqrt(sum / buf.length);
-  const now = Date.now();
-
-  if (rms > SING_THRESHOLD) {
-    if (!singStart) singStart = now;
-    const elapsed = now - singStart;
-    const pct = Math.min(100, (elapsed / SING_DURATION) * 100);
-    singBarFill.style.width = pct + '%';
-    if (elapsed >= SING_DURATION) { triggerRainbow(); return; }
-  } else {
-    singStart = null;
-    const cur = parseFloat(singBarFill.style.width) || 0;
-    singBarFill.style.width = Math.max(0, cur - SING_DECAY) + '%';
-  }
-
-  singRaf = requestAnimationFrame(singTick);
-}
-
-singBtn.addEventListener('click', async () => {
-  if (singModalOpen) {
+  function triggerRainbow() {
     singModal.classList.remove('visible');
     singModalOpen = false;
-    singStart = null;
     singBarFill.style.width = '0%';
-    cancelAnimationFrame(singRaf);
+    singStart = null;
     singRaf = null;
-  } else {
-    singModal.classList.add('visible');
-    singModalOpen = true;
-    singStart = null;
-    singBarFill.style.width = '0%';
 
-    const ok = await startMic();
-    if (!ok) {
-      singModal.querySelector('#sing-modal-inner').childNodes[0].textContent = 'mic access denied :(';
-      return;
+    document.body.classList.add('rainbow');
+    clearTimeout(rainbowTimer);
+    rainbowTimer = setTimeout(() => document.body.classList.remove('rainbow'), RAINBOW_DURATION);
+  }
+
+  function singTick() {
+    // KEY FIX: removed singModalOpen guard — rely on explicit cancelAnimationFrame on close instead
+    if (!analyser) { singRaf = null; return; }
+
+    const buf = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(buf);
+    let sum = 0;
+    for (let i = 0; i < buf.length; i++) sum += buf[i] * buf[i];
+    const rms = Math.sqrt(sum / buf.length);
+    const now = Date.now();
+
+    if (rms > SING_THRESHOLD) {
+      if (!singStart) singStart = now;
+      const elapsed = now - singStart;
+      const pct = Math.min(100, (elapsed / SING_DURATION) * 100);
+      singBarFill.style.width = pct + '%';
+      if (elapsed >= SING_DURATION) { triggerRainbow(); return; }
+    } else {
+      singStart = null;
+      const cur = parseFloat(singBarFill.style.width) || 0;
+      singBarFill.style.width = Math.max(0, cur - SING_DECAY) + '%';
     }
 
-    if (audioCtx && audioCtx.state === 'suspended') {
-      await audioCtx.resume();
-    }
-
-    cancelAnimationFrame(singRaf);
     singRaf = requestAnimationFrame(singTick);
   }
-});
 
-document.addEventListener('keydown', (e) => {
-  if (e.key !== 'Escape') return;
-  if (singModalOpen) {
-    singModal.classList.remove('visible');
-    singModalOpen = false;
-    singStart = null;
-    singBarFill.style.width = '0%';
-    cancelAnimationFrame(singRaf);
-    singRaf = null;
-  }
-  if (clapModalOpen) {
-    clapModal.classList.remove('visible');
-    clapModalOpen = false;
-    clapListening = false;
-  }
-});
+  singBtn.addEventListener('click', async () => {
+    if (singModalOpen) {
+      singModal.classList.remove('visible');
+      singModalOpen = false;
+      singStart = null;
+      singBarFill.style.width = '0%';
+      cancelAnimationFrame(singRaf);
+      singRaf = null;
+    } else {
+      singModal.classList.add('visible');
+      singModalOpen = true;
+      singStart = null;
+      singBarFill.style.width = '0%';
 
-singModal.addEventListener('click', (e) => {
-  if (e.target === singModal) {
-    singModal.classList.remove('visible');
-    singModalOpen = false;
-    singStart = null;
-    singBarFill.style.width = '0%';
-    cancelAnimationFrame(singRaf);
-    singRaf = null;
-  }
-});
+      const ok = await startMic();
+      if (!ok) {
+        singModal.querySelector('#sing-modal-inner').childNodes[0].textContent = 'mic access denied :(';
+        return;
+      }
 
-clapModal.addEventListener('click', (e) => {
-  if (e.target === clapModal) {
-    clapModal.classList.remove('visible');
-    clapModalOpen = false;
-    clapListening = false;
-  }
-});
+      // Browser suspends AudioContext until a user gesture — resume it now
+      if (audioCtx && audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
+      // Cancel any stale loop before starting fresh
+      cancelAnimationFrame(singRaf);
+      singRaf = requestAnimationFrame(singTick);
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    if (singModalOpen) {
+      singModal.classList.remove('visible');
+      singModalOpen = false;
+      singStart = null;
+      singBarFill.style.width = '0%';
+      cancelAnimationFrame(singRaf);
+      singRaf = null;
+    }
+    if (clapModalOpen) {
+      clapModal.classList.remove('visible');
+      clapModalOpen = false;
+      clapListening = false;
+    }
+  });
+
+  singModal.addEventListener('click', (e) => {
+    if (e.target === singModal) {
+      singModal.classList.remove('visible');
+      singModalOpen = false;
+      singStart = null;
+      singBarFill.style.width = '0%';
+      cancelAnimationFrame(singRaf);
+      singRaf = null;
+    }
+  });
+
+  clapModal.addEventListener('click', (e) => {
+    if (e.target === clapModal) {
+      clapModal.classList.remove('visible');
+      clapModalOpen = false;
+      clapListening = false;
+    }
+  });
 </script>
 </body>
 </html>
+
