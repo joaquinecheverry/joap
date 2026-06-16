@@ -785,15 +785,17 @@ const SANITY_QUERY = encodeURIComponent(
     const isVideo = asset && asset.mimeType && asset.mimeType.startsWith('video/');
 
     if (isVideo) {
-      const video = document.createElement('video');
-      video.src = asset.url + '#t=0.1';
-      video.muted = true;
-      video.preload = 'metadata';
-      video.style.width = '100%';
-      video.style.display = 'block';
-      video.style.pointerEvents = 'none';
-      div.appendChild(video);
-    } else {
+  const video = document.createElement('video');
+  video.src = asset.url;
+  video.controls = false;
+  video.autoplay = true;
+  video.loop = true;
+  video.muted = true;
+  video.playsInline = true;
+  video.style.width = '100%';
+  video.style.display = 'block';
+  imagesCol.appendChild(video);
+} else {
       const img = document.createElement('img');
       img.src = imageUrl(asset, 600);
       img.alt = project.title || '';
