@@ -162,7 +162,7 @@
   .col-images {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
   }
 
   .img-placeholder {
@@ -303,7 +303,7 @@
     position: fixed;
     top: 40px; left: 0; right: 0; bottom: 0;
     background: #fff;
-    z-index: 100;
+    z-index: 101;
     opacity: 0;
     pointer-events: none;
     display: grid;
@@ -366,13 +366,30 @@
   padding-top: 60px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 0;
 }
   .project-images-col::-webkit-scrollbar { display: none; }
 
   .project-images-col img {
     width: 100%;
     display: block;
+  }
+
+  /* ── Lazy-loaded media blur-up ── */
+  .img-placeholder img,
+  .img-placeholder video,
+  .project-images-col img,
+  .project-images-col video {
+    filter: blur(18px);
+    opacity: 0.85;
+    transition: filter 0.5s ease-out, opacity 0.5s ease-out;
+  }
+  .img-placeholder img.loaded,
+  .img-placeholder video.loaded,
+  .project-images-col img.loaded,
+  .project-images-col video.loaded {
+    filter: blur(0);
+    opacity: 1;
   }
 
   /* ── Dark mode ── */
@@ -545,7 +562,7 @@
 
 <nav>
   <div class="nav-left">
-    <span id="home-btn" style="cursor:pointer;">Joaquin Echeverry Braver</span>
+    <span id="home-btn" class="rainbow-hover" style="cursor:pointer;">Joaquin Echeverry Braver</span>
   </div>
   <div class="nav-mid"><a class="rainbow-hover" href="#" id="about-btn">About</a></div>
   <div class="nav-right" style="display:flex;align-items:center;justify-content:space-between;">
@@ -758,6 +775,45 @@ const SANITY_QUERY = encodeURIComponent(
     });
   }
 
+  // ── Lazy-loaded, blur-up media helpers ──────────────────────────
+  const lazyVideoObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const video = entry.target;
+        if (video.dataset.src) {
+          video.src = video.dataset.src;
+          video.load();
+          delete video.dataset.src;
+        }
+        lazyVideoObserver.unobserve(video);
+      }
+    });
+  }, { rootMargin: '250px' });
+
+  function createLazyImage(src, alt) {
+    const img = document.createElement('img');
+    img.loading = 'lazy';
+    img.alt = alt || '';
+    img.addEventListener('load', () => img.classList.add('loaded'));
+    img.src = src;
+    return img;
+  }
+
+  function createLazyVideo(src) {
+    const video = document.createElement('video');
+    video.controls = false;
+    video.autoplay = true;
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.style.width = '100%';
+    video.style.display = 'block';
+    video.dataset.src = src;
+    video.addEventListener('loadeddata', () => video.classList.add('loaded'));
+    lazyVideoObserver.observe(video);
+    return video;
+  }
+
   async function loadProjects() {
     try {
       const res  = await fetch(SANITY_URL);
@@ -785,20 +841,10 @@ const SANITY_QUERY = encodeURIComponent(
     const isVideo = asset && asset.mimeType && asset.mimeType.startsWith('video/');
 
     if (isVideo) {
-  const video = document.createElement('video');
-  video.src = asset.url;
-  video.controls = false;
-  video.autoplay = true;
-  video.loop = true;
-  video.muted = true;
-  video.playsInline = true;
-  video.style.width = '100%';
-  video.style.display = 'block';
-div.appendChild(video);
-} else {
-      const img = document.createElement('img');
-      img.src = imageUrl(asset, 600);
-      img.alt = project.title || '';
+      const video = createLazyVideo(asset.url);
+      div.appendChild(video);
+    } else {
+      const img = createLazyImage(imageUrl(asset, 600), project.title || '');
       div.appendChild(img);
     }
   }
@@ -831,20 +877,12 @@ div.appendChild(video);
   const isVideo = asset.mimeType && asset.mimeType.startsWith('video/');
 
   if (isVideo) {
-  const video = document.createElement('video');
-  video.src = asset.url;
-  video.autoplay = true;
-  video.loop = true;
-  video.muted = true;
-  video.playsInline = true;
-  video.style.width = '100%';
-  video.style.display = 'block';
-  imagesCol.appendChild(video);
-} else {
+    const video = createLazyVideo(asset.url);
+    imagesCol.appendChild(video);
+  } else {
     const url = imageUrl(asset, 800);
     if (!url) return;
-    const img = document.createElement('img');
-    img.src = url;
+    const img = createLazyImage(url, '');
     imagesCol.appendChild(img);
   }
 });
@@ -1175,4 +1213,3 @@ div.appendChild(video);
 </script>
 </body>
 </html>
-
