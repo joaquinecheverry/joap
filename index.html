@@ -179,6 +179,32 @@
   display: block;
 }
 
+  .proj-hover-title {
+    font-family: 'Archivo', sans-serif;
+    font-size: var(--size);
+    font-weight: 400;
+    -webkit-text-stroke: 0.7px #000;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 0;
+    opacity: 0;
+    padding-top: 0;
+    transform: translateY(-4px);
+    display: block;
+    transition: max-height 0.4s ease, opacity 0.3s ease, padding-top 0.4s ease, transform 0.4s ease;
+  }
+
+  .img-placeholder:hover .proj-hover-title {
+    max-height: 30px;
+    opacity: 1;
+    padding-top: 6px;
+    transform: translateY(0);
+  }
+
+  body.dark .proj-hover-title { color: #fff; -webkit-text-stroke-color: #fff; }
+
   .about-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -541,7 +567,8 @@
   body.rainbow .word-label,
   body.rainbow .word-input,
   body.rainbow .proj-back-arrow,
-  body.rainbow .project-info-col {
+  body.rainbow .project-info-col,
+  body.rainbow .proj-hover-title {
     animation: rainbow-text 0.4s linear infinite;
   }
   body.rainbow .col-checkbox,
@@ -847,6 +874,13 @@ const SANITY_QUERY = encodeURIComponent(
       const img = createLazyImage(imageUrl(asset, 600), project.title || '');
       div.appendChild(img);
     }
+  }
+
+  if (project.title) {
+    const titleEl = document.createElement('span');
+    titleEl.className = 'proj-hover-title rainbow-hover';
+    titleEl.textContent = project.title;
+    div.appendChild(titleEl);
   }
 
   bindPlaceholderClick(div);
