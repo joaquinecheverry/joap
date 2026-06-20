@@ -920,7 +920,10 @@
     video.style.width = '100%';
     video.style.display = 'block';
     video.dataset.src = src;
-    video.addEventListener('loadeddata', () => video.classList.add('loaded'));
+    video.addEventListener('loadeddata', () => {
+    video.classList.add('loaded');
+    video.play().catch(() => {});
+    });
     lazyVideoObserver.observe(video);
     return video;
   }
