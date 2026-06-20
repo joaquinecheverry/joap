@@ -1148,10 +1148,9 @@
   let prevRms = 0;
 
   function flashDot(n) {
-    const dot = n === 1 ? dot1 : dot2;
-    dot.classList.add('lit');
-    setTimeout(() => dot.classList.remove('lit'), 300);
-  }
+  const dot = n === 1 ? dot1 : dot2;
+  dot.classList.add('lit');
+}
 
   function resetDots() { dot1.classList.remove('lit'); dot2.classList.remove('lit'); }
 
