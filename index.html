@@ -555,6 +555,14 @@
       --col-gap: 3px;
     }
 
+    #header-2 .col-title::before {
+    content: 'Design';
+  }
+  #header-2 .col-title {
+    font-size: 0;
+  }
+
+    
     /* Single column nav: name left, about right, email hidden on mobile */
     nav {
       height: 32px;
@@ -571,13 +579,12 @@
     }
 
     /* Hide email on mobile to save space */
-    #main-email {
-      display: none;
-    }
-
-    #second-email {
-      display: none !important;
-    }
+    @media (max-width: 600px) {
+  #main-email {
+    display: inline;
+    font-size: 6pt;
+  }
+}
 
     /* Single column layout */
     .col-headers {
