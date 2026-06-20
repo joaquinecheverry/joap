@@ -1140,9 +1140,9 @@
   let lastClapTime   = 0;
   let clapListening  = false;
   let clapRaf        = null;
-  const CLAP_THRESHOLD = 0.18;
   const CLAP_COOLDOWN  = 250;
   const CLAP_WINDOW    = 2000;
+  let prevRms = 0;
 
   function flashDot(n) {
     const dot = n === 1 ? dot1 : dot2;
@@ -1163,7 +1163,10 @@
     const rms = Math.sqrt(sum / buf.length);
     const now = Date.now();
 
-    if (rms > CLAP_THRESHOLD && (now - lastClapTime > CLAP_COOLDOWN)) {
+    const spike = rms - prevRms;
+    prevRms = rms;
+
+    if (spike > 0.12 && rms > 0.08 && (now - lastClapTime > CLAP_COOLDOWN)) {      
       lastClapTime = now;
       clapCount++;
       flashDot(clapCount);
