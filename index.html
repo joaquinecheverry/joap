@@ -1227,8 +1227,7 @@
       clapModalOpen = false;
       clapListening = false;
     } else {
-      clapModal.querySelector('#clap-modal-inner').childNodes[0].textContent = 'clap twice to turn the lights off\n';
-      clapModal.classList.add('visible');
+clapModal.querySelector('#clap-modal-inner').childNodes[0].textContent = document.body.classList.contains('dark') ? 'clap twice to turn the lights on\n' : 'clap twice to turn the lights off\n';      clapModal.classList.add('visible');
       clapModalOpen = true;
       clapCount = 0;
       resetDots();
