@@ -424,6 +424,64 @@
     opacity: 1;
   }
 
+  /* ── Grid view overlay ── */
+  .grid-overlay {
+    position: fixed;
+    top: 40px; left: 0; right: 0; bottom: 0;
+    background: #fff;
+    z-index: 102;
+    opacity: 0;
+    pointer-events: none;
+    overflow-y: auto;
+    scrollbar-width: none;
+    padding: 12px var(--edge) var(--edge);
+    transition: opacity 0.3s ease;
+  }
+  .grid-overlay::-webkit-scrollbar { display: none; }
+  .grid-overlay.visible {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .grid-overlay-close {
+    display: block;
+    font-family: 'Archivo', sans-serif;
+    font-size: var(--size);
+    font-weight: 400;
+    color: #000;
+    -webkit-text-stroke: 0.7px #000;
+    letter-spacing: 0.01em;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    height: 30px;
+    line-height: 30px;
+  }
+  .grid-overlay-close:hover { opacity: 0.45; }
+
+  .grid-overlay-inner {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 2px;
+    margin-top: 8px;
+  }
+
+  .grid-item {
+    position: relative;
+    cursor: pointer;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #d8d8d8;
+  }
+  .grid-item img, .grid-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .grid-item:hover { outline: 1px solid #000; outline-offset: -1px; }
+
   /* ── Dark mode ── */
   body.dark {
     background: #000;
@@ -446,6 +504,10 @@
   body.dark .word-input-wrap { border-bottom-color: #fff; }
   body.dark .img-placeholder { background: #333; }
   body.dark .flickr-carousel { background: #111; }
+  body.dark .grid-overlay { background: #000; }
+  body.dark .grid-overlay-close { color: #fff; -webkit-text-stroke-color: #fff; }
+  body.dark .grid-item { background: #333; }
+  body.dark .grid-item:hover { outline-color: #fff; }
 
   /* ── Clap modal ── */
   #clap-modal {
@@ -547,6 +609,15 @@
   }
   body.dark #clap-btn { -webkit-text-stroke-color: #fff; }
 
+  #grid-view-btn {
+    cursor: pointer;
+    -webkit-text-stroke: 0.7px #000;
+    letter-spacing: 0.05em;
+    font-size: calc(var(--size) + 2pt);
+    line-height: 1;
+  }
+  body.dark #grid-view-btn { -webkit-text-stroke-color: #fff; }
+
   /* ── Mobile responsive ── */
   @media (max-width: 600px) {
     :root {
@@ -641,6 +712,16 @@
       padding-top: 0;
       grid-template-columns: 1fr 1fr;
     }
+
+    .grid-overlay {
+      top: 32px;
+      padding: 8px 5px 5px;
+    }
+    .grid-overlay-inner {
+      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+      gap: 1px;
+    }
+
     body {
       font-size:7pt;
   }
@@ -659,7 +740,10 @@
       <a href="mailto:help.auxstudio@live" id="second-email" class="rainbow-hover">help.auxstudio@live</a>
     </div>
     <a class="rainbow-hover" href="#" id="about-btn-mobile" style="display:none;">About</a>
-    <span id="clap-btn" class="rainbow-hover">!!!</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span id="grid-view-btn" class="rainbow-hover" title="Grid view">▦</span>
+      <span id="clap-btn" class="rainbow-hover">!!!</span>
+    </div>
   </div>
 </nav>
 
@@ -769,6 +853,12 @@
     <div class="proj-role" id="proj-role">Role Placeholder</div>
   </div>
   <div class="project-images-col" id="project-images-col"></div>
+</div>
+
+<!-- Grid view overlay -->
+<div class="grid-overlay" id="grid-overlay">
+  <button class="grid-overlay-close rainbow-hover" id="grid-overlay-close">← back</button>
+  <div class="grid-overlay-inner" id="grid-overlay-inner"></div>
 </div>
 
 <div id="clap-modal">
@@ -884,6 +974,8 @@
 
   document.getElementById('home-btn').addEventListener('click', () => {
     projectOverlay.classList.remove('visible');
+    gridOverlay.classList.remove('visible');
+    gridOpen = false;
     colHeadersEl.classList.remove('hidden');
     closeAbout();
   });
@@ -906,6 +998,7 @@
 
   const ASPECT_CLASSES = ['tall', 'short', 'sq', 'wide', ''];
   let sanityProjects = {};
+  let allDocs = [];
 
   function imageUrl(asset, w) {
     w = w || 600;
@@ -966,6 +1059,7 @@
       const res  = await fetch(SANITY_URL);
       const json = await res.json();
       const docs = json.result || [];
+      allDocs = docs;
 
       ['1','2','3'].forEach(function(c) {
         document.getElementById('col-images-' + c).innerHTML = '';
@@ -1007,12 +1101,68 @@
         container.appendChild(div);
       });
 
+      buildGridOverlay();
+
     } catch (err) {
       console.error('Sanity fetch failed:', err);
     }
   }
 
+  function buildGridOverlay() {
+    const inner = document.getElementById('grid-overlay-inner');
+    inner.innerHTML = '';
+
+    allDocs.forEach(function(project) {
+      const firstItem = project.images && project.images[0];
+
+      const div = document.createElement('div');
+      div.className = 'grid-item';
+      div.dataset.projectId = project._id;
+      div.title = project.title || '';
+
+      if (firstItem) {
+        const asset = firstItem.asset;
+        const isVideo = asset && asset.mimeType && asset.mimeType.startsWith('video/');
+
+        if (isVideo) {
+          div.appendChild(createLazyVideo(asset.url));
+        } else {
+          div.appendChild(createLazyImage(imageUrl(asset, 200), project.title || ''));
+        }
+      }
+
+      div.addEventListener('click', function() {
+        closeGridOverlay();
+        openProject(project._id);
+      });
+
+      inner.appendChild(div);
+    });
+  }
+
   loadProjects();
+
+  const gridViewBtn      = document.getElementById('grid-view-btn');
+  const gridOverlay      = document.getElementById('grid-overlay');
+  const gridOverlayClose = document.getElementById('grid-overlay-close');
+  let gridOpen = false;
+
+  function openGridOverlay() {
+    gridOpen = true;
+    gridOverlay.classList.add('visible');
+    colHeadersEl.classList.add('hidden');
+  }
+
+  function closeGridOverlay() {
+    gridOpen = false;
+    gridOverlay.classList.remove('visible');
+    colHeadersEl.classList.remove('hidden');
+  }
+
+  gridViewBtn.addEventListener('click', () => {
+    gridOpen ? closeGridOverlay() : openGridOverlay();
+  });
+  gridOverlayClose.addEventListener('click', closeGridOverlay);
 
   function openProject(projectId) {
     const data = sanityProjects[projectId];
