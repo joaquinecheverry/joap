@@ -462,22 +462,20 @@
 
   .grid-overlay-inner {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-    gap: 2px;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    align-items: start;
+    gap: 4px;
     margin-top: 8px;
   }
 
   .grid-item {
     position: relative;
     cursor: pointer;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
     background: #d8d8d8;
   }
   .grid-item img, .grid-item video {
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    height: auto;
     display: block;
   }
   .grid-item:hover { outline: 1px solid #000; outline-offset: -1px; }
@@ -718,8 +716,8 @@
       padding: 8px 5px 5px;
     }
     .grid-overlay-inner {
-      grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
-      gap: 1px;
+      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+      gap: 2px;
     }
 
     body {
@@ -1127,7 +1125,7 @@
         if (isVideo) {
           div.appendChild(createLazyVideo(asset.url));
         } else {
-          div.appendChild(createLazyImage(imageUrl(asset, 200), project.title || ''));
+          div.appendChild(createLazyImage(imageUrl(asset, 320), project.title || ''));
         }
       }
 
