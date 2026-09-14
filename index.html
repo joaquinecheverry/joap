@@ -1111,7 +1111,7 @@
     inner.innerHTML = '';
 
     allDocs.forEach(function(project) {
-      const items = (project.images || []).slice(0, 5);
+      const items = (project.images || []).slice();
       if (!items.length) items.push(null);
 
       items.forEach(function(item) {
